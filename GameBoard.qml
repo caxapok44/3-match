@@ -9,7 +9,7 @@ GridView{
     property int ind
     model: GameBoardModel {
     }
-    cellHeight: height / root.model.raw
+    cellHeight: height / root.model.row
     cellWidth: width / root.model.col
     objectName: "gridview"
 

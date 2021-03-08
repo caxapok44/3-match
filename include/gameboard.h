@@ -27,7 +27,7 @@ class GameBoard : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int col READ col CONSTANT);
-    Q_PROPERTY(int raw READ raw CONSTANT);
+    Q_PROPERTY(int row READ row CONSTANT);
     Q_PROPERTY(int score READ getScore CONSTANT);
 
 public:
@@ -47,7 +47,6 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex{}) const override;
     QHash<int, QByteArray> roleNames() const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    void qSleep(int ms);
 
     struct Ball{
         const std::vector<QString> Colors = {
