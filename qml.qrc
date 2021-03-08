@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>Sphere.qml</file>
+        <file>GameBoard.qml</file>
+        <file>Resource/bg.png</file>
+    </qresource>
+</RCC>
