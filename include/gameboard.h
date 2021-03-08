@@ -35,13 +35,14 @@ public:
     static constexpr size_t DEFAULT_BOARD_SIZE{24};
     GameBoard(const size_t dimensionSize = DEFAULT_BOARD_SIZE, QObject* parent = nullptr);
     static void registerMe(const std::string& moduleName);
-    bool move(int first, int second);
+
     Q_INVOKABLE void changeMovePhase(int index);
+    bool move(int first, int second);    
 
     size_t getBoardSize() const;
-    size_t raw() const;
+    size_t row() const;
     size_t col() const;
-    int getScore() const;
+    size_t getScore() const;
 
     int rowCount(const QModelIndex &parent = QModelIndex{}) const override;
     QHash<int, QByteArray> roleNames() const override;
@@ -69,9 +70,9 @@ public:
             color = newColor;
             return *this;
         }
-        Ball& operator=(const Ball newColor)
+        Ball& operator=(const Ball newBall)
         {
-            color = newColor.color;
+            color = newBall.color;
             return *this;
         }
     };
@@ -81,17 +82,17 @@ public:
 private:
     void shuffle(std::vector<Ball> &ballVec);
     void fallDownBalls(std::vector<Ball> &ballVec);
-    bool isNear(BoardPosition fr, BoardPosition sc) const;
+    bool isNear(const BoardPosition fr,const BoardPosition sc) const;
     bool isIndexValid( const size_t position) const;
-    size_t amountOfConnectedBalls(QString type, std::vector<Ball>& boardCopy, BoardPosition ballPos) const;   
+    size_t amountOfConnectedBalls(const QString type, std::vector<Ball>& boardCopy,const BoardPosition ballPos) const;
     int getIndexFromPosition(const BoardPosition pos)const;
-     BoardPosition getRowCol(const size_t index) const;
+    BoardPosition getRowCol(const size_t index) const;
     Ball createNewBall()const;
 
 
     bool  m_isMovePhase;
     int m_movingBallIndex;
-    int m_score;
+    size_t m_score;
     const size_t m_col;
     const size_t m_row;
     const size_t m_boardSize;

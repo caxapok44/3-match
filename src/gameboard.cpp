@@ -1,13 +1,5 @@
 ﻿#include "include/gameboard.h"
 
-
-void GameBoard::qSleep(int ms)
-{
-    struct timespec ts = { ms / 1000, (ms % 1000) * 1000 * 1000 };
-    nanosleep(&ts, NULL);
-}
-
-
 GameBoard::GameBoard(const size_t dimensionSize,QObject* parent)
     :QAbstractListModel{parent},
       m_isMovePhase{false},
@@ -40,23 +32,23 @@ void GameBoard::shuffle(std::vector<Ball> &ballVec)
 void GameBoard::fallDownBalls(std::vector<GameBoard::Ball> &ballVec)
 {
     for (size_t col = 0; col < m_col; col++)
-        for(int raw = m_row-1; raw >=0; raw--)
-            if(ballVec[getIndexFromPosition(std::make_pair(raw,col))] == nullptr)
+        for(int row = m_row-1; row >=0; row--)
+            if(ballVec[getIndexFromPosition(std::make_pair(row,col))] == nullptr)
             {
                 Ball moveBall;
                 moveBall = nullptr;
-                for(int moveRow = raw-1; moveRow >= 0; moveRow--) {
+                for(int moveRow = row-1; moveRow >= 0; moveRow--) {
                      moveBall = ballVec[getIndexFromPosition(std::make_pair(moveRow,col))];
 
                      if(moveBall.color != nullptr) {
                        ballVec[getIndexFromPosition(std::make_pair(moveRow,col))] = nullptr;
-                       ballVec[getIndexFromPosition(std::make_pair(raw,col))] = moveBall;
+                       ballVec[getIndexFromPosition(std::make_pair(row,col))] = moveBall;
                        break;
                      }
                 }
                 if(moveBall.color == nullptr)
                 {
-                   for(int newRaw = raw; newRaw >= 0; newRaw--) {
+                   for(int newRaw = row; newRaw >= 0; newRaw--) {
                        ballVec[getIndexFromPosition(std::make_pair(newRaw,col))] = createNewBall();;
                    }
                    break;
@@ -66,7 +58,7 @@ void GameBoard::fallDownBalls(std::vector<GameBoard::Ball> &ballVec)
 
 }
 
-bool GameBoard::isNear(BoardPosition fr, BoardPosition sc) const
+bool GameBoard::isNear(const BoardPosition fr,const BoardPosition sc) const
 {
     if  (fr == sc){
         return false;
@@ -80,9 +72,9 @@ bool GameBoard::isNear(BoardPosition fr, BoardPosition sc) const
     return  temp == 1 ? true : false;
 }
 
-size_t GameBoard::amountOfConnectedBalls(QString type,
+size_t GameBoard::amountOfConnectedBalls(const QString type,
                                          std::vector<GameBoard::Ball>& boardCopy,
-                                         BoardPosition pos) const
+                                         const BoardPosition pos) const
 {
     int ballIndex = getIndexFromPosition(pos);
     if  (ballIndex >= static_cast<int>(m_boardSize) || ballIndex < 0)
@@ -125,7 +117,7 @@ size_t GameBoard::col() const
     return m_col;
 }
 
-size_t GameBoard::raw() const
+size_t GameBoard::row() const
 {
     return m_row;
 }
@@ -249,7 +241,7 @@ GameBoard::Ball GameBoard::createNewBall() const
     return ball;
 }
 
-int GameBoard::getScore() const
+size_t GameBoard::getScore() const
 {
     return m_score;
 }
