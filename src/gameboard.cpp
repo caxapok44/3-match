@@ -191,7 +191,7 @@ void GameBoard::changeMovePhase(int index)
             if  (connectedBlocksFromSecond < MINIMUN_CONNECTED_BALLS &&
                  connectedBlocksFromFirst < MINIMUN_CONNECTED_BALLS)
             {
-                qDebug() << "moveBack";
+                qDebug() << "Here is back move!!!";
                 move(m_movingBallIndex, index);
             }
 
