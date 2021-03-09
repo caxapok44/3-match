@@ -6,7 +6,7 @@ GridView{
     property real movingItemX: 0
     property real movingItemY: 0
     property int scoring: 0
-    property int ind
+    property int ind: -2
     property int ind2
     model: GameBoardModel {
     }
@@ -39,6 +39,7 @@ GridView{
                         else
                         {
                           root.ind = -1
+                          borColorAnim.complete()
                         }
                     }
                 }
@@ -47,9 +48,9 @@ GridView{
                     running: index === ind ? true : false
                     alwaysRunToEnd: true
                     loops: Animation.Infinite // The animation is set to loop indefinitely
-                    ColorAnimation { from: "lightblue"; to: "red"; duration: 500;}
-                    ColorAnimation { from: "red"; to: "lightblue"; duration: 500;}
-                   // PauseAnimation { duration: 250 } // This puts a bit of time between the loop
+                    ColorAnimation { from: "lightblue"; to: "red"; duration: 250;}
+                    ColorAnimation { from: "red"; to: "lightblue"; duration: 250;}
+                    PauseAnimation { duration: 250 } // This puts a bit of time between the loop
                 }
             }            
         }
