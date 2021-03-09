@@ -18,7 +18,7 @@ Rectangle{
         border{
             color: "black"
             width: 2
-        }
+        }        
     }
 }
 
