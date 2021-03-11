@@ -4,5 +4,7 @@
         <file>Sphere.qml</file>
         <file>GameBoard.qml</file>
         <file>Resource/bg.png</file>
+        <file>Score.qml</file>
+        <file>Resource/constants.json</file>
     </qresource>
 </RCC>

@@ -1,62 +1,55 @@
 import QtQuick 2.0
+
 import Game 1.0
+
 GridView{
     id: root
+
     property bool isMoving: false
-    property real movingItemX: 0
-    property real movingItemY: 0
-    property int scoring: 0
-    property int ind: -2
-    property int ind2
+    property int prevIndex: -1
+
+    interactive: false
+
     model: GameBoardModel {
     }
     cellHeight: height / root.model.row
     cellWidth: width / root.model.col
-    objectName: "gridview"
 
+    delegate:Sphere{
+        id: _sphere
 
-    delegate:
-        Item{        
-        id: _sphereWrapper
         width: root.cellWidth
         height: root.cellHeight
 
-            Sphere{
-                id: _sphere
-                anchors.fill: _sphereWrapper
-                colorCircle: colorBall
-                objectName: index
-                MouseArea{
-                    anchors.fill: parent
-                    onClicked:{
-                        root.model.changeMovePhase(index)                        
-                        scoring = root.model.score
-                        isMoving = !isMoving
-                        if (isMoving)
-                        {
-                          root.ind = index
-                        }
-                        else
-                        {
-                          root.ind = -1
-                          borColorAnim.complete()
-                        }
-                    }
-                }
-                SequentialAnimation on color{
-                    id: borColorAnim
-                    running: index === ind ? true : false
-                    alwaysRunToEnd: true
-                    loops: Animation.Infinite // The animation is set to loop indefinitely
-                    ColorAnimation { from: "lightblue"; to: "red"; duration: 250;}
-                    ColorAnimation { from: "red"; to: "lightblue"; duration: 250;}
-                    PauseAnimation { duration: 250 } // This puts a bit of time between the loop
-                }
-            }            
+        visible: y >= 0
+        colorCircle: colorBall
+
+        onBallClicked: {
+            root.model.changeMovePhase(index)
+            isMoving = !isMoving
+            if (isMoving){
+              root.prevIndex = index
+            }
+            else{
+              root.prevIndex = -1
+            }
         }
+        SequentialAnimation on color{
+            id: borColorAnim
+
+            running: index === prevIndex ? true : false
+            alwaysRunToEnd: true
+            loops: Animation.Infinite
+
+            ColorAnimation { from: "lightblue"; to: "red"; duration: 300;}
+            ColorAnimation { from: "red"; to: "lightblue"; duration: 150;}
+            PauseAnimation { duration: 250 }
+        }
+}
     populate: Transition {
         NumberAnimation{
             properties: "y"; from:0; duration: 300;
         }
     }
+
 }

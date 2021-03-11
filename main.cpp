@@ -3,6 +3,8 @@
 #include <QQmlComponent>
 #include <QQmlProperty>
 #include <iostream>
+#include <QObject>
+#include <QQuickView>
 #include <QDebug>
 #include "include/gameboard.h"
 
@@ -18,6 +20,7 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     GameBoard::registerMe("Game");
+
 
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
