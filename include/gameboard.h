@@ -40,7 +40,7 @@ public:
             "gold"
         };
         Ball()
-            :color{Colors[rand()%4]}
+            :color{""}
         {
 
         };
@@ -84,12 +84,12 @@ public:
 
 signals:
     void scoreChanged();
+    void ballAdded();
 
 private:
     void createTable(std::vector<Ball> &ballVec);
     void fallDownBalls(std::vector<Ball> &ballVec);
 
-    bool move(const int first,const int second);
     bool isNear(const BoardPosition fr,const BoardPosition sc) const;
     bool isIndexValid( const int position) const;
 
@@ -113,5 +113,13 @@ private:
     enum GameRoles{
         ColorRole = Qt::UserRole + 1
     };
+
+    // QAbstractItemModel interface
+public:
+
+     bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
+                   const QModelIndex &destinationParent, int destinationChild) override;
+     bool insertRows(int row, int count, const QModelIndex &parent) override;
+     bool removeRows(int row, int count, const QModelIndex &parent) override;
 };
 

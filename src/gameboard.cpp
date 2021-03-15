@@ -24,8 +24,7 @@ void GameBoard::createTable(std::vector<Ball> &ballVec)
     static std::mt19937 generator(seed);
     for(int i = 0;i < m_boardSize; i++)
     {
-        Ball newBall{};
-        ballVec[i] = newBall.color;
+        ballVec[i] = createNewBall();
     }
     std::shuffle(m_rowColBoard.begin(), m_rowColBoard.end(), generator);
 
@@ -34,6 +33,7 @@ void GameBoard::createTable(std::vector<Ball> &ballVec)
 
 void GameBoard::fallDownBalls(std::vector<GameBoard::Ball> &ballVec)
 {
+    std::vector<GameBoard::Ball> vecCopy{ballVec};
     for (int col = 0; col < m_col; col++)
     {
         for(int row = m_row-1; row >=0; row--)
@@ -41,23 +41,32 @@ void GameBoard::fallDownBalls(std::vector<GameBoard::Ball> &ballVec)
             if(ballVec[getIndexFromPosition(std::make_pair(row,col))] == nullptr)
             {
                 Ball moveBall;
-                moveBall = nullptr;
+                if (vecCopy[getIndexFromPosition(std::make_pair(row,col))] == nullptr)
+                {
+                    removeRows(getIndexFromPosition(std::make_pair(row,col)),1,QModelIndex{});
+                    insertRows(getIndexFromPosition(std::make_pair(row,col)),1,QModelIndex{});
+                }
                 for(int moveRow = row-1; moveRow >= 0; moveRow--)
                 {
                      moveBall = ballVec[getIndexFromPosition(std::make_pair(moveRow,col))];
                      if(!moveBall.color.isEmpty())
                      {
-                       ballVec[getIndexFromPosition(std::make_pair(moveRow,col))] = nullptr;
-                       ballVec[getIndexFromPosition(std::make_pair(row,col))] = moveBall;
-                       break;
+                        ballVec[getIndexFromPosition(std::make_pair(row,col))] = moveBall;
+                        ballVec[getIndexFromPosition(std::make_pair(moveRow,col))] = Ball{};
+                        break;
                      }
                 }
                 if(moveBall.color.isEmpty())
                 {
-                   for(int newRaw = row; newRaw >= 0; newRaw--)
-                   {
-                      ballVec[getIndexFromPosition(std::make_pair(newRaw,col))] = createNewBall();
-                   }
+                    for(int newRaw = row; newRaw >= 0; newRaw--)
+                    {
+                        if (vecCopy[getIndexFromPosition(std::make_pair(newRaw,col))] == nullptr)
+                        {
+                            removeRows(getIndexFromPosition(std::make_pair(newRaw,col)),1,QModelIndex{});
+                            insertRows(getIndexFromPosition(std::make_pair(newRaw,col)),1,QModelIndex{});
+                        }
+                        ballVec[getIndexFromPosition(std::make_pair(newRaw,col))] = createNewBall();
+                    }
                    break;
                 }
             }
@@ -180,26 +189,24 @@ void GameBoard::changeMovePhase(int index)
     }
     else
     {
-        if(move(m_movingBallIndex, index))
+        if(moveRows(QModelIndex(),m_movingBallIndex,1,QModelIndex(), index))
         {
             //direct checking of connected Balls
-            std::vector<Ball> copygameBoardFirst{m_rowColBoard};
-            int connectedBlocksFromFirst = getConnectedBallsCount(copygameBoardFirst[index].color,
-                                                  copygameBoardFirst,
+            std::vector<Ball> copyVec{m_rowColBoard};
+            int connectedBlocksFromFirst = getConnectedBallsCount(copyVec[index].color,
+                                                  copyVec,
                                                   getRowCol(index));
-
-            if  (connectedBlocksFromFirst >= MINIMUN_CONNECTED_BALLS)
-            {
-                fallDownBalls(copygameBoardFirst);
-                m_rowColBoard.assign(copygameBoardFirst.begin(),copygameBoardFirst.end());
-                m_score += connectedBlocksFromFirst * (connectedBlocksFromFirst + 1) / 2;
-            }
             if  (connectedBlocksFromFirst < MINIMUN_CONNECTED_BALLS)
             {
                 qDebug() << "Here is back move!!!";
-                move(m_movingBallIndex, index);
+                moveRows(QModelIndex(),index,1,QModelIndex(), m_movingBallIndex);
             }
-
+            if  (connectedBlocksFromFirst >= MINIMUN_CONNECTED_BALLS)
+            {                
+                fallDownBalls(copyVec);
+                m_rowColBoard.assign(copyVec.begin(), copyVec.end());
+                m_score += connectedBlocksFromFirst * (connectedBlocksFromFirst + 1) / 2;
+            }
         }
         emit scoreChanged();
         emit dataChanged(createIndex(0,0), createIndex(m_boardSize,0));
@@ -207,27 +214,72 @@ void GameBoard::changeMovePhase(int index)
 
 }
 
-bool GameBoard::move(const int first,const int second)
+bool GameBoard::moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
+                         const QModelIndex &destinationParent, int destinationChild)
 {
+    Q_UNUSED(sourceParent);
+    Q_UNUSED(count);
+    Q_UNUSED(destinationParent);
 
-    if (!isIndexValid(first) && !isIndexValid(second))
+    if (!isIndexValid(sourceRow) && !isIndexValid(destinationChild))
     {
+        qWarning() << "[moveRows] - invalid index";
         return false;
     }
-    if  (m_rowColBoard[first].color == m_rowColBoard[second].color)
+    if  (m_rowColBoard[sourceRow].color == m_rowColBoard[destinationChild].color)
     {
+        qWarning() << "[moveRows] - same Color";
         return false;
     }
 
-    const BoardPosition firstElementPosition {getRowCol(first)};
-    const BoardPosition secondElementPosition {getRowCol(second)};
+    const BoardPosition firstElementPosition {getRowCol(sourceRow)};
+    const BoardPosition secondElementPosition {getRowCol(destinationChild)};
+
     if  (!isNear(firstElementPosition, secondElementPosition))
     {
+        qWarning() << "[moveRows] - Not Near";
         return false;
     }
-    std::swap(m_rowColBoard[first], m_rowColBoard[second]);
+    std::swap(m_rowColBoard[sourceRow], m_rowColBoard[destinationChild]);
     emit dataChanged(createIndex(0,0), createIndex(m_boardSize,0));
+    return true;
+//    int temp = destinationChild;
+//    if(sourceRow - destinationChild < 0) temp++;
+//    if  (beginMoveRows(sourceParent, sourceRow, sourceRow,destinationParent, temp))
+//    {
+//        std::swap(m_rowColBoard[sourceRow], m_rowColBoard[destinationChild]);
+//        endMoveRows();
+//        return true;
+//    }
+//  return false;
+}
 
+bool GameBoard::insertRows(int row, int count, const QModelIndex &parent)
+{
+    Q_UNUSED(count);
+    Q_UNUSED(parent);
+    if ( !isIndexValid(row))
+    {
+        return false;
+    }
+    beginInsertRows(parent, row, row);
+    Ball ball{};
+    m_rowColBoard.insert(m_rowColBoard.begin() + row, ball);
+    endInsertRows();
+    return true;
+}
+
+bool GameBoard::removeRows(int row, int count, const QModelIndex &parent)
+{
+    Q_UNUSED(count);
+    Q_UNUSED(parent);
+    if  (!isIndexValid(row))
+    {
+        return false;
+    }
+    beginRemoveColumns(parent,row, row);
+    m_rowColBoard.erase(m_rowColBoard.begin() + row);
+    endRemoveRows();
     return true;
 }
 
@@ -259,8 +311,11 @@ int GameBoard::getIndexFromPosition(const BoardPosition pos) const
 GameBoard::Ball GameBoard::createNewBall() const
 {
     Ball ball{};
+    ball.color = ball.Colors[rand()%4];
     return ball;
 }
+
+
 
 int GameBoard::getScore() const
 {
